@@ -6,9 +6,17 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var sessions = require('express-session');
+require("msnodesqlv8");
 
-var routes = require('./routes/index');
-var users = require('./routes/users');
+
+let indexRouter = require('./routes/index');
+let usersRouter = require('./routes/users');
+let loginRouter = require('./routes/login');
+let registerRouter = require('./routes/register');
+let productsRouter = require('./routes/products');
+let cartRouter = require('./routes/cart');
+let ordersRouter = require('./routes/orders');
 
 var app = express();
 
@@ -24,8 +32,29 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes);
-app.use('/users', users);
+
+app.use(sessions({
+    secret: "tG4zDUo4QqIcWgqopdaA",
+    saveUninitialized: true,
+    cookie: { maxAge: 1000 * 60 * 60 * 24 },
+    resave: false
+}));
+
+app.use(cookieParser("tG4zDUo4QqIcWgqopdaA"));
+
+
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
+app.use('/login', loginRouter);
+app.use('/register', registerRouter);
+app.use('/product', productsRouter);
+app.use('/cart', cartRouter);
+app.use('/orders', ordersRouter);
+
+app.get('/logout', (req, res) => {
+    req.session.destroy()
+    res.redirect('/')
+});
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

@@ -1,0 +1,13 @@
+extends layout
+
+block content
+    h2 Dodaj produkt
+        form(action="/products/add" method="POST")
+            input(type="text" placeholder="Nazwa produktu" name="title" value=product.title)
+            textarea(placeholder="Opis" rows="10" style="width:100%;" name="description")
+            input(type="file" name="image" value=product.image, accept="image/*")
+            input(type="number" name="price" step="0.01" placeholder="Cena" value=product.price)
+            button(type="submit") Dodaj
+            if (errors != undefined) 
+                each err in errors
+                    err.msg

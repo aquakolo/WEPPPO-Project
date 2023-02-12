@@ -1,0 +1,12 @@
+extends layout
+
+block content
+    p Rejestracja
+        form(action="/register" method="POST")
+            input(type="text" placeholder="Login" name="username")
+            input(type="password" placeholder="Hasło" name="password")
+            button(type="submit") Zarejestruj
+            if (errors != undefined) 
+                each err in errors
+                    err.msg
+        a(href="/login") Posiadasz już konto?

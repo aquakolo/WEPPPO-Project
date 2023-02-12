@@ -30,16 +30,73 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="app.js" />
+    <Content Include="dbconfig.js">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="dboperations.js">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="libman.json" />
+    <Content Include="model\link.js">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="model\order.js">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="model\product.js" />
+    <Content Include="model\user.js">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="routes\cart.js">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="routes\index.js" />
+    <Content Include="routes\login.js">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="routes\orders.js">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="routes\products.js">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="routes\register.js">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="routes\users.js" />
     <Content Include="package.json" />
     <Content Include="public\stylesheets\main.css" />
     <Content Include="README.md" />
+    <Content Include="views\addproduct.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\cart.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\editproduct.pug">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="views\index.pug" />
     <Content Include="views\layout.pug" />
     <Content Include="views\error.pug" />
+    <Content Include="views\login.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\order.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\orders.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\register.pug">
+      <SubType>Code</SubType>
+    </Content>
+    <Content Include="views\users.pug">
+      <SubType>Code</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="model\" />
     <Folder Include="public\" />
     <Folder Include="public\images\" />
     <Folder Include="public\javascripts\" />

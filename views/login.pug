@@ -1,0 +1,9 @@
+extends layout
+
+block content
+        h2 Zaloguj
+        form(action="/login" method="POST")
+                input(type="text" placeholder="Login" name="username")
+                input(type="password" placeholder="Hasło" name="password")
+            button(type="submit") Zaloguj
+            a(href="/register") Załóż konto

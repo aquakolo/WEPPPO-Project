@@ -1,0 +1,19 @@
+extends layout
+
+mixin user(id, username, admin, cartID)
+    th=id
+    td=username
+    td=admin
+    td=a(href="/cart/"+cartID role="button")Koszyk
+
+block content
+    .row
+        table.table
+            tr
+                th Id
+                th Login
+                th Admin
+                th Koszyk
+                each user in users 
+                    tr
+                        +user(user.id, user.username, user.admin, user.cartID)
