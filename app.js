@@ -7,8 +7,6 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var sessions = require('express-session');
-require("msnodesqlv8");
-
 
 let indexRouter = require('./routes/index');
 let usersRouter = require('./routes/users');
@@ -17,6 +15,7 @@ let registerRouter = require('./routes/register');
 let productsRouter = require('./routes/products');
 let cartRouter = require('./routes/cart');
 let ordersRouter = require('./routes/orders');
+const dboperations = require('./dboperations');
 
 var app = express();
 

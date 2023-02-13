@@ -1,9 +1,13 @@
-require("msnodesqlv8");
+require("mssql/msnodesqlv8");
 
 var config = {
-    server: 'LENOVO-I-PETER\\SQLEXPRESS.database.windows.net',  //update me
+    database: 'WEPPO-Project',
+    server: 'localhost',
+    port: 1433,
     driver: "msnodesqlv8",
-    database: 'WEPPO-Project'
-};
+    options: {
+        trustedConnection: true
+    }
+}
 
 module.exports = config;
