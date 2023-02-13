@@ -3,7 +3,10 @@ extends layout
 block content
         h2 Zaloguj
         form(action="/login" method="POST")
-                input(type="text" placeholder="Login" name="username")
-                input(type="password" placeholder="Hasło" name="password")
+            input(type="text" placeholder="Login" name="username")
+            input(type="password" placeholder="Hasło" name="password")
             button(type="submit") Zaloguj
-            a(href="/register") Załóż konto
+            if (errors != undefined) 
+                each err in errors
+                    =err.msg
+        a(href="/register") Załóż konto

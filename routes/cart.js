@@ -34,7 +34,7 @@ router.get('/remove/:id', (req, res, next) => {
 router.get('/checkout', (req, res, next) => {
     if (req.session.valid) {
         let order = db.findUser(req.session.username);
-        db.getProductsfromOrder(order.cartID).then(products => {
+        db.getProductsfromOrder(order.Id).then(products => {
             res.render('cart', {
                 title: 'Wózek',
                 products: products,

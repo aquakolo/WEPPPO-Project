@@ -4,7 +4,9 @@ mixin user(id, username, admin, cartID)
     th=id
     td=username
     td=admin
-    td=a(href="/cart/"+cartID role="button")Koszyk
+    td 
+        a(href="/order/"+cartID role="button") Koszyk
+        
 
 block content
     .row

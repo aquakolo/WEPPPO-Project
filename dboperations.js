@@ -6,9 +6,9 @@ var conn = new mssql.ConnectionPool(dbconfig);
 async function getAllOrders() {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let orders = await request.query("SELECT * from Order");
+        let orders = await request.query("SELECT * from [dbo].[Order]");
         await conn.close();
-        return orders.recordsets;
+        return orders.recordset;
     }
     catch (error) {
         console.log(error);
@@ -18,9 +18,9 @@ async function getAllOrders() {
 async function getOrders() {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let orders = await request.query("SELECT * from Order where status = 0");
+        let orders = await request.query("SELECT * from [dbo].[Order] where [status] = 0");
         await conn.close();
-        return orders.recordsets;
+        return orders.recordset;
     }
     catch (error) {
         console.log(error);
@@ -30,11 +30,10 @@ async function getOrders() {
 async function getUserOrders(userId) {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let orders = await request
-            .input('customerId', sql.Int, userId)
-            .query("SELECT * from Order WHERE customerId = @customerId");
+        request.input('customerId', userId);
+        let orders = await request.query("SELECT * from [dbo].[Order] WHERE [customerId] = @customerId");
         await conn.close();
-        return orders.recordsets;
+        return orders.recordset;
     }
     catch (error) {
         console.log(error);
@@ -44,9 +43,9 @@ async function getUserOrders(userId) {
 async function getCarts() {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let orders = await request.query("SELECT * from Order where status = 1");
+        let orders = await request.query("SELECT * from [dbo].[Order] where [status] = 1");
         await conn.close();
-        return orders.recordsets;
+        return orders.recordset;
     }
     catch (error) {
         console.log(error);
@@ -56,11 +55,10 @@ async function getCarts() {
 async function getOrder(orderId) {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let order = await request
-            .input('input_parameter', sql.Int, orderId)
-            .query("SELECT * from Order where Id = @input_parameter");
+        request.input('input_parameter', orderId);
+        let order = await request.query("SELECT * from [dbo].[Order] where [Id] = @input_parameter");
         await conn.close();
-        return order.recordsets;
+        return order.recordset;
     }
     catch (error) {
         console.log(error);
@@ -70,14 +68,13 @@ async function getOrder(orderId) {
 async  function addOrder(order) {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let neworder = await request
-            .input('customerId', sql.Int, order.customerId)
-            .input('sumValue', sql.Float, order.sumValue)
-            .input('status', sql.Bit, order.status)
-            .input('time', sql.DateTime, order.time)
-            .query("INSERT INTO Order (customerId, sumValue, status, time) VALUES (@customerId, @sumValue, @status, @time)");
+        request.input('customerId', order.customerId);
+        request.input('sumValue', order.sumValue);
+        request.input('status', order.status);
+        request.input('time', order.time);
+        let neworder = await request.query("INSERT INTO [dbo].[Order] ([customerId], [sumValue], [status], [time]) VALUES (@customerId, @sumValue, @status, @time)");
         await conn.close();
-        return neworder.recordsets();
+        return neworder.recordset;
     }
     catch (err) {
         console.log(err);
@@ -87,22 +84,22 @@ async  function addOrder(order) {
 async function saveCart(orderId) {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        await request
-            .input('orderId', sql.Int, orderId)
-            .input('time', sql.DateTime, Date.now())
-            .query("Update Order SET status = 0 , time = @time WHERE Id = @orderId");
-        let userId = await request
-            .input('orderId', sql.Int, orderId)
-            .query("SELECT consumerId FROM Order WHERE Id = @orderId")
+
+        request.input('orderId', orderId);
+        request.input('time', Date.now());
+        await request.query("Update [dbo].[Order] SET [status] = 0 , [time] = @time WHERE [Id] = @orderId");
+        var request = new mssql.Request(conn);
+        request.input('orderId', orderId);
+        let userId = await request.query("SELECT consumerId FROM [dbo].[Order] WHERE [Id] = @orderId")
         let neworder = addOrder({
             customerId: userId,
             sumValue: 0.0,
             status: 1
         })
-        await request
-            .input('Id', sql.Int, userId)
-            .input('cartID', sql.Int, neworder.Id)
-            .query("UPDATE User SET cartID = @cartID WHERE id = @Id");
+        var request = new mssql.Request(conn);
+        request.input('Id', userId);
+        request.input('cartID', neworder.Id);
+        await request.query("UPDATE [dbo].[User] SET [cartID] = @cartID WHERE [id] = @Id");
         await conn.close();
     }
     catch (error) {
@@ -114,13 +111,11 @@ async function saveCart(orderId) {
 async function deleteOrder(orderId) {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        await request
-            .input('input_parameter', sql.Int, userId)
-            .query("DELETE FROM Link WHERE orderId = @input_parameter");
-
-        await request
-            .input('input_parameter', sql.Int, userId)
-            .query("DELETE FROM Order WHERE Id = @input_parameter");
+        request.input('input_parameter', orderId);
+        await request.query("DELETE FROM [dbo].[Link] WHERE [orderId] = @input_parameter");
+        var request = new mssql.Request(conn);
+        request.input('input_parameter', orderId);
+        await request.query("DELETE FROM [dbo].[Order] WHERE [Id] = @input_parameter");
         await conn.close();
     }
     catch (error) {
@@ -131,9 +126,9 @@ async function deleteOrder(orderId) {
 async function getAllProducts() {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let products = await request.query("SELECT * from Product");
+        let products = await request.query("SELECT * from [dbo].[Product]");
         await conn.close();
-        return products.recordsets;
+        return products.recordset;
     }
     catch (error) {
         console.log(error);
@@ -143,9 +138,9 @@ async function getAllProducts() {
 async function getVisibleProducts() {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let products = await request.query("SELECT * from Product where status = 1");
+        let products = await request.query("SELECT * from [dbo].[Product] where [status] = 1");
         await conn.close();
-        return products.recordsets;
+        return products.recordset;
     }
     catch (error) {
         console.log(error);
@@ -155,11 +150,10 @@ async function getVisibleProducts() {
 async function getProduct(productId) {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let product = await request
-            .input('input_parameter', sql.Int, productId)
-            .query("SELECT * from Product where Id = @input_parameter");
+        request.input('input_parameter', productId);
+        let product = await request.query("SELECT * from [dbo].[Product] where [Id] = @input_parameter");
         await conn.close();
-        return product.recordsets;
+        return product.recordset;
     }
     catch (error) {
         console.log(error);
@@ -169,15 +163,14 @@ async function getProduct(productId) {
 async function addProduct(product) {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let product = await request
-            .input('title', sql.VarChar, product.title)
-            .input('description', sql.VarChar, product.description)
-            .input('value', sql.Float, product.value)
-            .input('image', sql.VarBinary, product.image)
-            .input('status', sql.Bir, product.status)
-            .query("INSERT INTO Product (title, description, value, image, status) VALUES (@title, @description, @value, @image, @status)");
+        request.input('title', product.title);
+        request.input('description', product.description);
+        request.input('value', product.value);
+        request.input('image', product.image);
+        request.input('status', product.status);
+        let product2 = await request.query("INSERT INTO [dbo].[Product] ([title], [description], [value], [image], [status]) VALUES (@title, @description, @value, @image, @status)");
         await conn.close();
-        return product.recordsets;
+        return product2.recordset;
     }
     catch (err) {
         console.log(err);
@@ -188,12 +181,11 @@ async function deleteProduct(productId) {
     try {
         let carts = await cartLink();
         await conn.connect(); var request = new mssql.Request(conn);
-        await request
-            .input('input_parameter', sql.Int, productId)
-            .query("UPDATE Product SET status = 0 where Id = @input_parameter");
-        await request
-            .input('input_parameter', sql.Int, productId)
-            .query("DELETE FROM Link WHERE productId = @input_parameter AND orderID IN ${carts}");
+        request.input('input_parameter', productId);
+        await request.query("UPDATE [dbo].[Product] SET [status] = 0 where [Id] = @input_parameter");
+        var request = new mssql.Request(conn);
+        request.input('input_parameter', productId);
+        await request.query("DELETE FROM [dbo].[Link] WHERE [productId] = @input_parameter AND [orderID] IN ${carts}");
         await conn.close();
     }
     catch (error) {
@@ -214,9 +206,9 @@ async function editProduct(product) {
 async function getAllUsers() {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let products = await request.query("SELECT * from User");
+        let products = await request.query("SELECT * from [dbo].[User]");
         await conn.close();
-        return products.recordsets;
+        return products.recordset;
     }
     catch (error) {
         console.log(error);
@@ -226,9 +218,9 @@ async function getAllUsers() {
 async function getUsers() {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let products = await request.query("SELECT * from User where admin = 0");
+        let products = await request.query("SELECT * from [dbo].[User] where [admin] = 0");
         await conn.close();
-        return products.recordsets;
+        return products.recordset;
     }
     catch (error) {
         console.log(error);
@@ -238,9 +230,9 @@ async function getUsers() {
 async function getAdmins() {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let products = await request.query("SELECT * from User where admin = 1");
+        let products = await request.query("SELECT * from [dbo].[User] where [admin] = 1");
         await conn.close();
-        return products.recordsets;
+        return products.recordset;
     }
     catch (error) {
         console.log(error);
@@ -250,11 +242,10 @@ async function getAdmins() {
 async function getUser(userId) {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let user = await request
-            .input('input_parameter', sql.Int, usertId)
-            .query("SELECT * from User where Id = @input_parameter");
+        request.input('input_parameter', userId);
+        let user = await request.query("SELECT * from [dbo].[User] where [Id] = @input_parameter");
         await conn.close();
-        return user.recordsets;
+        return user.recordset;
     }
     catch (error) {
         console.log(error);
@@ -264,11 +255,10 @@ async function getUser(userId) {
 async function findUser(username) {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let user = await request
-            .input('input_parameter', sql.VarChar, username)
-            .query("SELECT * from User where username = @input_parameter");
+        request.input('input_parameter', username);
+        let user = await request.query("SELECT * from [dbo].[User] where [username] = @input_parameter");
         await conn.close();
-        return user.recordsets;
+        return user.recordset;
     }
     catch (error) {
         console.log(error);
@@ -278,24 +268,24 @@ async function findUser(username) {
 async function addUser(user) {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let nuser = await request
-            .input('username', sql.VarChar, user.username)
-            .input('password', sql.VarChar, user.password)
-            .input('admin', sql.Bit, user.admin)
-            .input('cartID', sql.Int, user.cartID)
-            .query("INSERT INTO User (username, password, admin, cartID) VALUES (@username, @password, @admin, @cartID)");
+        console.log(user.username);
+        request.input('username', user.username);
+        request.input('password', user.password);
+        request.input('admin', user.admin);
+        request.input('cartID', user.cartID);
+        let nuser = await request.query('INSERT INTO [dbo].[User] ([username], [password], [admin], [cartID]) VALUES (@username, @password, @admin, @cartID)');
         let neworder = addOrder({
             customerId: nuser.Id,
             sumValue: 0.0,
             status: 1
         })
-        await request
-            .input('Id', sql.Int, nuser.Id)
-            .input('cartID', sql.Int, neworder.Id)
-            .query("UPDATE User SET cartID = @cartID WHERE id = @Id");
+        var request = new mssql.Request(conn);
+        request.input('Id', nuser.Id);
+        request.input('cartID', neworder.Id);
+        await request.query('update [dbo].[User] set [cartID] = @cartID where [Id] = @Id');
         nuser.cartID = neworder.Id;
         await conn.close();
-        return nuser.recordsets;
+        return nuser.recordset;
     }
     catch (err) {
         console.log(err);
@@ -305,15 +295,14 @@ async function addUser(user) {
 async function editUser(user) {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let insertProduct = await request
-            .input('Id', sql.Int, user.Id)
-            .input('username', sql.VarChar, user.username)
-            .input('password', sql.VarChar, user.password)
-            .input('admin', sql.Bit, user.admin)
-            .input('cartID', sql.Int, user.cartID)
-            .query("UPDATE User SET username = @username, password = @password, admin = @admin, cartID = @cartID WHERE id = @Id");
+        request.input('Id', user.Id);
+        request.input('username', user.username);
+        request.input('password', user.password);
+        request.input('admin', user.admin);
+        request.input('cartID', user.cartID);
+        let insertProduct = await request.query("UPDATE [dbo].[User] SET [username] = @username, [password] = @password, [admin] = @admin, [cartID] = @cartID WHERE [id] = @Id");
         await conn.close();
-        return insertProduct.recordsets;
+        return insertProduct.recordset;
     }
     catch (err) {
         console.log(err);
@@ -323,16 +312,14 @@ async function editUser(user) {
 async function deleteUser(userId) {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let list = await request
-            .input('input_parameter', sql.Int, userId)
-            .query("SELECT Id from Order WHERE customerId = @input_parameter")
-        list.recordsets.forEach(order => {
+        request.input('input_parameter', userId);
+        let list = await request.query("SELECT Id from [dbo].[Order] WHERE [customerId] = @input_parameter")
+        list.recordset.forEach(order => {
                 deleteOrder(order.Id)
         })
-
-        await request
-            .input('input_parameter', sql.Int, userId)
-            .query("DELETE FROM User WHERE Id = @input_parameter");
+        var request = new mssql.Request(conn);
+        request.input('input_parameter', userId);
+        await request.query("DELETE FROM [dbo].[User] WHERE [Id] = @input_parameter");
         await conn.close();
     }
     catch (error) {
@@ -343,9 +330,9 @@ async function deleteUser(userId) {
 async function cartLink() {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let orders = await request.query("SELECT Id from Order where status = 1");
+        let orders = await request.query("SELECT Id from [dbo].[Order] where [status] = 1");
         await conn.close();
-        return orders.recordsets;
+        return orders.recordset;
     }
     catch (error) {
         console.log(error);
@@ -355,10 +342,9 @@ async function cartLink() {
 async function addProductToOrder(productId, orderId) {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        await request
-            .input('productId', sql.Int)
-            .input('orderId', sql.Int)
-            .query("INSERT INTO User (productId, orderId) VALUES (@productId, @orderId)");
+        request.input('productId', productId);
+        request.input('orderId', orderId);
+        await request.query("INSERT INTO [dbo].[User] ([productId], [orderId]) VALUES (@productId, @orderId)");
         await conn.close();
     }
     catch (err) {
@@ -369,12 +355,11 @@ async function addProductToOrder(productId, orderId) {
 async function findProductInOrder(productId, orderId) {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let Id = await request
-            .input('productId', sql.Int)
-            .input('orderId', sql.Int)
-            .query("SELECT Id FROM Link WHERE productId = @productId AND orderId = @orderId");
+        request.input('productId', productId);
+        request.input('orderId', orderId);
+        let Id = await request.query("SELECT Id FROM [dbo].[Link] WHERE [productId] = @productId AND [orderId] = @orderId");
         await conn.close();
-        return Id.recordsets();
+        return Id.recordset;
     }
     catch (err) {
         console.log(err);
@@ -384,11 +369,10 @@ async function findProductInOrder(productId, orderId) {
 async function getProductsfromOrder(orderId) {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let products = await request
-            .input('orderId', sql.Int)
-            .query("SELECT * FROM Link WHERE orderId = @orderId");
+        request.input('orderId', orderId);
+        let products = await request.query("SELECT * FROM [dbo].[Link] WHERE [orderId] = @orderId");
         await conn.close();
-        return products.recordsets();
+        return products.recordset;
     }
     catch (err) {
         console.log(err);
@@ -398,10 +382,9 @@ async function getProductsfromOrder(orderId) {
 async function deleteProductFromOrder(productId, orderId) {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        await request
-            .input('productId', sql.Int)
-            .input('orderId', sql.Int)
-            .query("DELETE FROM Link WHERE productId = @productId AND orderId = @orderId");
+        request.input('productId', productId);
+        request.input('orderId', orderId);
+        await request.query("DELETE FROM [dbo].[Link] WHERE [productId] = @productId AND [orderId] = @orderId");
         await conn.close();
     }
     catch (err) {

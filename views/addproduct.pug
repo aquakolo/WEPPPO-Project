@@ -3,10 +3,10 @@ extends layout
 block content
     h2 Dodaj produkt
         form(action="/products/add" method="POST")
-            input(type="text" placeholder="Nazwa produktu" name="title" value=product.title)
+            input(type="text" placeholder="Nazwa produktu" name="title" )
             textarea(placeholder="Opis" rows="10" style="width:100%;" name="description")
-            input(type="file" name="image" value=product.image, accept="image/*")
-            input(type="number" name="price" step="0.01" placeholder="Cena" value=product.price)
+            input(type="file" name="image" accept="image/*")
+            input(type="number" name="price" step="0.01" placeholder="Cena" )
             button(type="submit") Dodaj
             if (errors != undefined) 
                 each err in errors

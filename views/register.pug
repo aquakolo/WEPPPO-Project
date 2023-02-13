@@ -8,5 +8,5 @@ block content
             button(type="submit") Zarejestruj
             if (errors != undefined) 
                 each err in errors
-                    err.msg
+                    =err.msg
         a(href="/login") Posiadasz już konto?

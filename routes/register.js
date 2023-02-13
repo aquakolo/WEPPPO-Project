@@ -2,6 +2,7 @@ let express = require('express');
 let router = express.Router();
 let db = require('../dboperations');
 let bcrypt = require('bcrypt');
+let User=require("../model/user");
 
 router.get('/', function (req, res, next) {
     if (req.session.valid) {
@@ -11,7 +12,9 @@ router.get('/', function (req, res, next) {
 });
 
 router.post('/', (req, res) => {
-    const { username, password } = req.body;
+    let username = req.body.username;
+    let password = req.body.password;
+    console.log(username);
     let errors = [];
     if (!username || !password) {
         errors.push({ msg: 'Uzypełnij login i hasło' });
@@ -25,10 +28,9 @@ router.post('/', (req, res) => {
             session: req.session,
             errors
         })
-    } else {
+    } else {    
         db.findUser(username).then(user => {
             if (user[0]) {
-                console.log(user);
                 errors.push({ msg: 'Nazwa użytkownika jest zajęta' });
                 res.render('register', {
                     title: 'Zajerestruj',
@@ -36,19 +38,14 @@ router.post('/', (req, res) => {
                     errors
                 });
             } else {
-                let admin = false;
-                const newUser = new User({
-                    username,
-                    password,
-                    admin
-                })
-
-                bcrypt.genSalt(10, (err, salt) => bcrypt.hash(newUser.password, salt, (err, hash) => {
-                    if (err) throw err;
-                    newUser.password = hash;
-                    newUser.save()
-                        .then(user => res.redirect('/login'));
-                }))
+                var newUser = new User({
+                    username: username,
+                    password: password,
+                    admin: false,
+                    card: 1
+                });
+                db.addUser(newUser);
+                res.redirect('/login');
             }
         });
     }

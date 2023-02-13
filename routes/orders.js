@@ -27,6 +27,16 @@ router.get('/', function (req, res, next) {
     }
 });
 
-
+router.get('/:id', (req, res, next) => {
+    let order = db.getOrder(id);
+        db.getProductsfromOrder(id).then(products => {
+            res.render('order', {
+                title: 'Zamówienie',
+                products: products,
+                order: order,
+                session: req.session,
+            });
+        });
+});
 
 module.exports = router;

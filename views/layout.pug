@@ -1,7 +1,16 @@
 doctype html
 html
-  head
-    title= title
-    link(rel='stylesheet', href='/stylesheets/main.css')
-  body
-    block content
+    head
+        title= title
+        link(rel='stylesheet', href='/stylesheets/main.css')
+    body
+        div(id="pasek")
+            a(href="/") Strona Główna 
+            a(href="/orders") Zamówienia 
+            a(href="/cart") Koszyk 
+            a(href="/users") Użytkownicy 
+            a(href="/login") Login 
+            a(href="/register") Register 
+        br
+
+        block content
