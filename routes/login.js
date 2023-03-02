@@ -1,7 +1,6 @@
 let express = require('express');
 let router = express.Router();
 let db = require('../dboperations');
-let User = require("../model/user");
 
 router.get('/', function (req, res, next) {
     if (req.session.valid) {
@@ -18,10 +17,9 @@ router.post('/', (req, res) => {
         if (user[0]) {
             if (password == user[0].password) {
                 req.session.user = user[0].username;
-                req.session.userid = user[0].id;
+                req.session.userid = user[0].Id;
                 req.session.admin = user[0].admin;
                 req.session.valid = true;
-                req.session.cart = {};
                 req.session.amount = 0;
                 res.redirect('/');
             } else {

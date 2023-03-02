@@ -13,9 +13,13 @@ router.get('/add/:id', (req, res, next) => {
         res.redirect('/login');
     }
     let productId = req.params.id;
-    let orderId = db.findUser(req.session.username).cartID;
-    db.addProductToOrder(productId, orderId);
-    res.redirect('/cart/checkout');
+    db.findUser(req.session.user).then(user => {
+        let orderId = user[0].cartID;
+        db.addProductToOrder(productId, orderId).then(() => {
+            res.redirect('/cart/checkout');
+        });
+    });
+
 });
 
 router.get('/remove/:id', (req, res, next) => {
@@ -23,23 +27,27 @@ router.get('/remove/:id', (req, res, next) => {
         res.redirect('/login');
     }
     let productId = req.params.id;
-    let orderId = db.findUser(req.session.username).cartID;
-    if (productId)
-        if (findProductInOrder(productId, orderId)) {
-            deleteProductFromOrder(productId, orderId);
-        }
-    res.redirect('/cart/checkout');
+    db.findUser(req.session.user).then(user => {
+        let orderId = user[0].cartID;
+        db.deleteProductFromOrder(productId, orderId).then(() => {
+            res.redirect('/cart/checkout');
+        });
+    });
+    
 });
 
 router.get('/checkout', (req, res, next) => {
     if (req.session.valid) {
-        let order = db.findUser(req.session.username);
-        db.getProductsfromOrder(order.Id).then(products => {
-            res.render('cart', {
-                title: 'Wózek',
-                products: products,
-                order: order,
-                session: req.session,
+        db.findUser(req.session.user).then(user => {
+            db.getOrder(user[0].cartID).then(order => {
+                db.getProductsfromOrder(order[0].Id).then(products => {
+                    res.render('cart', {
+                        title: 'Wózek',
+                        products: products,
+                        order: order[0],
+                        session: req.session,
+                    });
+                });
             });
         });
     } else {
@@ -49,12 +57,11 @@ router.get('/checkout', (req, res, next) => {
 
 
 router.get('/make_order', (req, res, next) => {
-    let session = req.session;
-    if (session.valid) {
-        db.findUser(req.session.username).then(user => {
-            db.getOrder(user.cartID).value.then(value => {
-                if (value > 0)
-                    db.saveCart(user.cartID).then(() => {
+    if (req.session.valid) {
+        db.findUser(req.session.user).then(user => {
+            db.getOrder(user[0].cartID).then(order => {
+                if (order[0].sumValue > 0)
+                    db.saveCart(user[0].cartID).then(() => {
                         res.redirect('/orders');
                     });
                 else

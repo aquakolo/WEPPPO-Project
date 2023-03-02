@@ -4,11 +4,11 @@ var router = express.Router();
 let db = require('../dboperations');
 
 router.get('/details/:id', (req, res, next) => {
-    db.getProduct(req.params.id).then(p => {
-        if (!p) res.send('<h1>404</h1>');
+    db.getProduct(req.params.id).then(product => {
+        if (product.length<1) res.send('<h1>404</h1>');
         res.render('product', {
-            title: "p.title",
-            products: [p],
+            title: "Szczegóły",
+            product: product[0],
             session: req.session
         });
     });
@@ -23,11 +23,15 @@ router.get('/add', (req, res, next) => {
 });
 
 router.post('/add', (req, res) => {
-    const { title, description, value,image} = req.body;
+
+    var title = req.body.title;
+    var description = req.body.description;
+    var image = "/images/" + req.body.image;
+    var value = req.body.value;
     let errors = [];
     if (req.session.admin) {
-        if (!title || !image || !value) {
-            errors.push({ msg: 'Uzupełnij nazwę, cenę i URL obrazka' });
+        if (!title || !value) {
+            errors.push({ msg: 'Uzupełnij nazwę i cenę' });
         }
         if (errors.length > 0) {
             res.render('addproduct', {
@@ -40,8 +44,11 @@ router.post('/add', (req, res) => {
                 title: title,
                 description: description,
                 value: value,
-                image: image
-            }).then(p => res.redirect('/product/details/' + p.id));
+                image: image,
+                status: 1
+            }).then(p => {
+                res.redirect('/');
+            });
         }
     } else {
         res.redirect('/');
@@ -62,6 +69,7 @@ router.get('/edit/:id', function (req, res, next) {
     if (req.session.admin) {
         db.getProduct(req.params.id).then(p => {
             if (p) {
+                console.log(p);
                 res.render('editproduct', {
                     title: 'Edytuj produkt',
                     product: p,

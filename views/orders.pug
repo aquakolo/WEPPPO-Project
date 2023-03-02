@@ -1,20 +1,24 @@
+
 extends layout
 
 mixin order(id, customerId, sumValue, status, time)
-    th(scope="row")=id
+    td=id
     if session.admin
-        td a(href="/user/"+customerId role="button") Klient
-    td=sumValue + "zł"
+        td 
+            a(href="/user/"+customerId role="button") Klient
+    td=sumValue
+        = zł
     if status == 1
-        td "Koszyk"
+        td Koszyk
     else
-    td=moment(time).format("HH:mm DD/MM/YY")
-    a(href="/orders/"+id role="button") Przejdź do zamówienia
+        td Zamówienie    
+    td=time
+    td
+        a(href="/orders/"+id role="button") Przejdź do zamówienia
 
 block content
-    .row
-        table.table
-            tr
+    table
+        tr
                 th ID
                 if session.admin
                     th Klient
@@ -25,5 +29,5 @@ block content
                 th Łącze
                 each order in orders 
                     tr
-                        +order(id, customerId, sumValue, status, time)
+                        +order(order.Id, order.customerId, order.sumValue, order.status, order.time)
                 

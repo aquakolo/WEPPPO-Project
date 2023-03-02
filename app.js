@@ -15,7 +15,7 @@ let registerRouter = require('./routes/register');
 let productsRouter = require('./routes/products');
 let cartRouter = require('./routes/cart');
 let ordersRouter = require('./routes/orders');
-const dboperations = require('./dboperations');
+
 
 var app = express();
 

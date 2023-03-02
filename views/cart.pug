@@ -1,17 +1,37 @@
 extends layout
 
-mixin product(id, title, value, image)
-    img(src=imgSource alt="err" style='width:250px; height:400px; object-fit: contain;')
-    h3=title
-    div
-        parseFloat(value).toFixed(2) + "zł" 
+mixin product(id, title, value,count,sumValue,  image)
+    td=id
+    td
+        img(src=image  style='width:150px; height:200px; object-fit:contain;')
+    td=title
+    td=value
+        = "zł" 
+    td=count
+    td=sumValue
+        = "zł" 
+    td
         a(href="/cart/add/"+id role="button") +
+    td    
         a(href="/cart/remove/"+id role="button") -
 
 block content
     h2 Koszyk
+    table
+        tr
+            th ID
+            th Zdjęcie
+            th Tytuł
+            th Cena jednostkowa
+            th Ilość
+            th Cena sumaryczna
+            th Dodaj
+            th Usuń
+          
         each product in products
-            +product(product.id, product.title, product.value, product.image)
+            tr
+                +product(product.Id, product.title, product.value,product.count, product.sumValue, product.image)
     p   Całkowita cena: 
-        order.sumValue zł
+        =order.sumValue
+        = "zł"
     a(href="/cart/make_order/" role="button") Zamów

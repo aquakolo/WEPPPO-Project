@@ -38,14 +38,14 @@ router.post('/', (req, res) => {
                     errors
                 });
             } else {
-                var newUser = new User({
+                let user = {
                     username: username,
                     password: password,
                     admin: false,
-                    card: 1
-                });
-                db.addUser(newUser);
-                res.redirect('/login');
+                    cartID: 1
+                };
+                db.addUser(user).then(() => { res.redirect('/login'); });
+                
             }
         });
     }

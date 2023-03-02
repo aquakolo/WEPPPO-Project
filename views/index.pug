@@ -1,23 +1,41 @@
 extends layout
 
 mixin product(id, title, description, value, image)
-    a(href="/products/details/"+id)
-        img.img_responsive(src=imgage alt="err" style='width:250px; height:350px; object-fit: contain;')
-        h4=title
-        div
-            value + " zł"
+    div(id="pasek")
+        td 
+            a(href="/products/details/"+id)=id
+        td 
+            img(src=image  style='width:150px; height:200px; object-fit:contain;')
+        td=title
+        td=value
+            = 'zł'
         if session.admin
-            a(href="/products/remove/"+id role="button") Usuń
-            a(href="/products/edit/"+id role="button") Edytuj
+            td
+                a(href="/products/remove/"+id role="button") Usuń 
+            td
+                a(href="/products/edit/"+id role="button") Edytuj 
         if session.valid
-            a(href="/cart/add/"+id role="button") Dodaj do koszyka
-    br
-    br
+            td
+                a(href="/cart/add/"+id role="button") Dodaj do koszyka 
+        
+        br
 
 block content
-  p Welcome to #{title}
-  div
+    p Welcome to #{title}
     if session.admin
         a(href="/products/add/" role="button") Dodaj
-    each product in products
-        +product(product.id, product.title, product.description, product.value, product.image)
+    table
+        tr
+            th Id
+            th Zdjęcie
+            th Tytuł
+            th Cena
+            if session.admin
+                th Usuń
+                th Edytuj
+            if session.valid
+                th Dodaj do koszyka
+            
+        each product in products
+            tr
+                +product(product.Id, product.title, product.description, product.value, product.image)

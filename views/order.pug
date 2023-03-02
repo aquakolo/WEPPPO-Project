@@ -1,7 +1,7 @@
 extends layout
 
 mixin product(id, title, value, image)
-    img(src=imgSource alt="err" style='width:250px; height:400px; object-fit: contain;')
+    img(src=image  style='width:150px; height:200px; object-fit:contain;')
     h3=title
     div
         parseFloat(price).toFixed(2) + "zł" 
@@ -11,5 +11,7 @@ block content
         each product in products
             +product(product.id, product.title, product.value, product.image)
     br
-    "Całkowita cena: " parseFloat(order.sumValue).toFixed(2)" zł"
-    "Data zakupy: " order.time
+    div Całkowita cena: 
+        parseFloat(order.sumValue).toFixed(2) zł
+    div Data zakupy: 
+        order.time

@@ -1,0 +1,17 @@
+extends layout
+
+block content
+    div
+        product.Id
+        img(src=image  style='width:150px; height:200px; object-fit:contain;')
+        product.title
+        product.description
+        product.value
+            = 'zł'
+        if session.admin
+            a(href="/products/remove/"+id role="button") Usuń 
+            a(href="/products/edit/"+id role="button") Edytuj 
+        if session.valid
+            a(href="/cart/add/"+id role="button") Dodaj do koszyka 
+
+        br

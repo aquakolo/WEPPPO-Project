@@ -88,6 +88,9 @@
     <Content Include="views\orders.pug">
       <SubType>Code</SubType>
     </Content>
+    <Content Include="views\product.pug">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="views\register.pug">
       <SubType>Code</SubType>
     </Content>

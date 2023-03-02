@@ -1,12 +1,13 @@
 extends layout
 
 block content
-    h2 Edytuj produkt ##{product.id}
+    h2 Edytuj produkt 
+        product.id
     form(action="/products/edit/"+product.id method="POST")
         input(type="text" placeholder="Nazwa produktu" name="title" value=product.title)
-        textarea(placeholder="Opis" rows="10" style="width:100%;" name="description")
+        textarea(placeholder="Opis" rows="10" style="width:100%;" name="description" value=product.description)
         input(type="file" name="image" value=product.image, accept="image/*")
-        input(type="number" name="price" step="0.01" placeholder="Cena" value=product.price)
+        input(type="number" name="price" step="0.01" placeholder="Cena" value=product.value)
         button(type="submit") Zapisz
         if (errors != undefined) 
             each err in errors

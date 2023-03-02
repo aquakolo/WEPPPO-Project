@@ -14,7 +14,7 @@ router.get('/', function (req, res, next) {
                 });
             });
     } else if (req.session.valid) {
-        db.getUserOrders(req.session.userId)
+        db.getUserOrders(req.session.userid)
             .then(orders => {
                 res.render('orders', {
                     title: 'Twoje Zamówienia',
@@ -27,16 +27,22 @@ router.get('/', function (req, res, next) {
     }
 });
 
-router.get('/:id', (req, res, next) => {
-    let order = db.getOrder(id);
-        db.getProductsfromOrder(id).then(products => {
-            res.render('order', {
-                title: 'Zamówienie',
-                products: products,
-                order: order,
-                session: req.session,
-            });
+router.get('/:id', function (req, res, next) {
+    let id = req.params.id;
+    if (req.session.valid) {
+        db.getOrder(id).then(order => {
+            db.getProductsfromOrder(order[0].Id).then(products => {
+                    res.render('cart', {
+                        title: 'Wózek',
+                        products: products,
+                        order: order[0],
+                        session: req.session,
+                    });
+             });
         });
+    } else {
+        res.redirect('/login');
+    }
 });
 
 module.exports = router;

@@ -1,11 +1,11 @@
 extends layout
 
 mixin user(id, username, admin, cartID)
-    th=id
+    td=id
     td=username
     td=admin
     td 
-        a(href="/order/"+cartID role="button") Koszyk
+        a(href="/orders/"+cartID role="button") Koszyk
         
 
 block content
@@ -18,4 +18,4 @@ block content
                 th Koszyk
                 each user in users 
                     tr
-                        +user(user.id, user.username, user.admin, user.cartID)
+                        +user(user.Id, user.username, user.admin, user.cartID)

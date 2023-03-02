@@ -1,5 +1,6 @@
 var dbconfig = require('./dbconfig');
 var mssql = require("mssql/msnodesqlv8");
+var moment=require('moment');
 
 var conn = new mssql.ConnectionPool(dbconfig);
 
@@ -32,6 +33,7 @@ async function getUserOrders(userId) {
         await conn.connect(); var request = new mssql.Request(conn);
         request.input('customerId', userId);
         let orders = await request.query("SELECT * from [dbo].[Order] WHERE [customerId] = @customerId");
+        console.log(orders)
         await conn.close();
         return orders.recordset;
     }
@@ -86,19 +88,20 @@ async function saveCart(orderId) {
         await conn.connect(); var request = new mssql.Request(conn);
 
         request.input('orderId', orderId);
-        request.input('time', Date.now());
+        request.input('time', moment().format('YYYY-MM-DD HH:mm:ss'));
         await request.query("Update [dbo].[Order] SET [status] = 0 , [time] = @time WHERE [Id] = @orderId");
         var request = new mssql.Request(conn);
         request.input('orderId', orderId);
-        let userId = await request.query("SELECT consumerId FROM [dbo].[Order] WHERE [Id] = @orderId")
-        let neworder = addOrder({
-            customerId: userId,
+        let userId = await request.query("SELECT [customerId] FROM [dbo].[Order] WHERE [Id] = @orderId");
+        let neworder = await addOrder({
+            customerId: userId.recordset[0].customerId,
             sumValue: 0.0,
-            status: 1
-        })
+            status: 1,
+            time: null
+        });
         var request = new mssql.Request(conn);
-        request.input('Id', userId);
-        request.input('cartID', neworder.Id);
+        request.input('Id', userId.recordset[0].customerId);
+        request.input('cartID', neworder[0].Id);
         await request.query("UPDATE [dbo].[User] SET [cartID] = @cartID WHERE [id] = @Id");
         await conn.close();
     }
@@ -126,7 +129,7 @@ async function deleteOrder(orderId) {
 async function getAllProducts() {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let products = await request.query("SELECT * from [dbo].[Product]");
+        let products = await request.query("SELECT * from [dbo].[Products]");
         await conn.close();
         return products.recordset;
     }
@@ -138,7 +141,7 @@ async function getAllProducts() {
 async function getVisibleProducts() {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
-        let products = await request.query("SELECT * from [dbo].[Product] where [status] = 1");
+        let products = await request.query("SELECT * from [dbo].[Products] where [status] = 1");
         await conn.close();
         return products.recordset;
     }
@@ -151,7 +154,7 @@ async function getProduct(productId) {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
         request.input('input_parameter', productId);
-        let product = await request.query("SELECT * from [dbo].[Product] where [Id] = @input_parameter");
+        let product = await request.query("SELECT * from [dbo].[Products] where [Id] = @input_parameter");
         await conn.close();
         return product.recordset;
     }
@@ -168,7 +171,7 @@ async function addProduct(product) {
         request.input('value', product.value);
         request.input('image', product.image);
         request.input('status', product.status);
-        let product2 = await request.query("INSERT INTO [dbo].[Product] ([title], [description], [value], [image], [status]) VALUES (@title, @description, @value, @image, @status)");
+        let product2 = await request.query("INSERT INTO [dbo].[Products] ([title], [description], [value], [image], [status]) VALUES (@title, @description, @value, @image, @status)");
         await conn.close();
         return product2.recordset;
     }
@@ -182,7 +185,7 @@ async function deleteProduct(productId) {
         let carts = await cartLink();
         await conn.connect(); var request = new mssql.Request(conn);
         request.input('input_parameter', productId);
-        await request.query("UPDATE [dbo].[Product] SET [status] = 0 where [Id] = @input_parameter");
+        await request.query("UPDATE [dbo].[Products] SET [status] = 0 where [Id] = @input_parameter");
         var request = new mssql.Request(conn);
         request.input('input_parameter', productId);
         await request.query("DELETE FROM [dbo].[Link] WHERE [productId] = @input_parameter AND [orderID] IN ${carts}");
@@ -274,16 +277,17 @@ async function addUser(user) {
         request.input('admin', user.admin);
         request.input('cartID', user.cartID);
         let nuser = await request.query('INSERT INTO [dbo].[User] ([username], [password], [admin], [cartID]) VALUES (@username, @password, @admin, @cartID)');
-        let neworder = addOrder({
-            customerId: nuser.Id,
+        let order = {
+            customerId: nuser.recordset.Id,
             sumValue: 0.0,
             status: 1
-        })
+        };
+        let neworder = await addOrder(order)
         var request = new mssql.Request(conn);
-        request.input('Id', nuser.Id);
-        request.input('cartID', neworder.Id);
+        request.input('Id', nuser.recordset.Id);
+        request.input('cartID', neworder.recordset.Id);
         await request.query('update [dbo].[User] set [cartID] = @cartID where [Id] = @Id');
-        nuser.cartID = neworder.Id;
+        nuser.cartID = neworder.recordset.Id;
         await conn.close();
         return nuser.recordset;
     }
@@ -344,7 +348,34 @@ async function addProductToOrder(productId, orderId) {
         await conn.connect(); var request = new mssql.Request(conn);
         request.input('productId', productId);
         request.input('orderId', orderId);
-        await request.query("INSERT INTO [dbo].[User] ([productId], [orderId]) VALUES (@productId, @orderId)");
+        var product = await request.query("Select [count] from [dbo].[Link] WHERE [productId] = @productId AND [orderId] = @orderId");
+        if (product.recordset.length == 0) {
+            console.log("insert")
+            var request = new mssql.Request(conn);
+            request.input('productId', productId);
+            request.input('orderId', orderId);
+            request.input('count', 1)
+            await request.query("INSERT INTO [dbo].[Link] ([productId], [orderId], [count]) VALUES (@productId, @orderId, @count)");
+        }
+        else {
+            console.log("update")
+            var request = new mssql.Request(conn);
+            request.input('productId', productId);
+            request.input('orderId', orderId);
+            request.input('count', product.recordset[0].count + 1);
+            await request.query("UPDATE [dbo].[Link] SET [count] = @count WHERE [productId] = @productId AND [orderId] = @orderId");
+        }
+
+        var request = new mssql.Request(conn);
+        request.input('orderId', orderId);
+        var order = await request.query("Select [sumValue] from [dbo].[Order] WHERE [Id] = @orderId");
+        var request = new mssql.Request(conn);
+        request.input('productId', productId);
+        var pvalue = await request.query("Select [value] from [dbo].[Products] WHERE [Id] = @productId");
+        request.input('orderId', orderId);
+        request.input('sumValue', order.recordset[0].sumValue + pvalue.recordset[0].value);
+        await request.query("UPDATE [dbo].[Order] SET [sumValue] = @sumValue WHERE [Id] = @orderId");
+
         await conn.close();
     }
     catch (err) {
@@ -370,21 +401,67 @@ async function getProductsfromOrder(orderId) {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
         request.input('orderId', orderId);
-        let products = await request.query("SELECT * FROM [dbo].[Link] WHERE [orderId] = @orderId");
+        let products = await request.query("SELECT * FROM [dbo].[Products] where [Id] IN (SELECT [productId] FROM [dbo].[Link] WHERE [orderId] = @orderId)");
+        var request = new mssql.Request(conn);
+        request.input('orderId', orderId);
+        const map = new Map();
+        await request.query("SELECT * FROM [dbo].[Link] WHERE [orderId] = @orderId").then(links => {
+            links.recordset.forEach(link => {
+                map.set(link.productId, link.count == null ? 1 : link.count);
+            });
+        })
         await conn.close();
-        return products.recordset;
+
+        product2 = [];
+
+        products.recordset.forEach(product => {
+            product.count = map.get(product.Id);
+            product.sumValue = product.value * product.count;
+            product2.push(product)
+        });
+
+
+        return product2;
     }
     catch (err) {
         console.log(err);
     }
 }
 
+
 async function deleteProductFromOrder(productId, orderId) {
     try {
         await conn.connect(); var request = new mssql.Request(conn);
         request.input('productId', productId);
         request.input('orderId', orderId);
-        await request.query("DELETE FROM [dbo].[Link] WHERE [productId] = @productId AND [orderId] = @orderId");
+        var product = await request.query("Select [count] from [dbo].[Link] WHERE [productId] = @productId AND [orderId] = @orderId");
+        console.log(product);
+        if (product.recordset.length > 0) {
+            if (product.recordset[0].count == 1) {
+                console.log("delete");
+                var request = new mssql.Request(conn);
+                request.input('productId', productId);
+                request.input('orderId', orderId);
+                await request.query("DELETE FROM [dbo].[Link] WHERE [productId] = @productId AND [orderId] = @orderId");
+            }
+            else {
+                console.log("decrese");
+                var request = new mssql.Request(conn);
+                request.input('productId', productId);
+                request.input('orderId', orderId);
+                request.input('count', parseInt(product.recordset[0].count) - 1)
+                await request.query("UPDATE [dbo].[Link] SET [count] = @count WHERE [productId] = @productId AND [orderId] = @orderId");
+            }
+            var request = new mssql.Request(conn);
+            request.input('orderId', orderId);
+            var order = await request.query("Select [sumValue] from [dbo].[Order] WHERE [Id] = @orderId");
+            var request = new mssql.Request(conn);
+            request.input('productId', productId);
+            var pvalue = await request.query("Select [value] from [dbo].[Products] WHERE [Id] = @productId");
+            request.input('orderId', orderId);
+            request.input('sumValue', parseInt(order.recordset[0].sumValue) - parseInt(pvalue.recordset[0].value));
+            await request.query("UPDATE [dbo].[Order] SET [sumValue] = @sumValue WHERE [Id] = @orderId");
+        }
         await conn.close();
     }
     catch (err) {
